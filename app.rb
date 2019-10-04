@@ -1,6 +1,7 @@
 require 'sinatra/base'
 require './lib/player'
 require './lib/game'
+require './lib/attack'
 
 # set :session_secret, 'super secret'
 
@@ -23,10 +24,29 @@ class Battle < Sinatra::Base
     erb :play
   end
 
+  post '/attack' do
+    Attack.run($game.opponent_of($game.current_turn))
+    if $game.game_over?
+      redirect '/game-over'
+    else
+      redirect '/attack'
+    end
+  end
+
   get '/attack' do
     @game = $game
-    @game.attack(@game.player2)
     erb :attack
+  end
+
+  post '/switch-turns' do
+    @game = $game
+    @game.switch_turn
+    redirect '/play'
+  end
+
+  get '/game-over' do
+    @game = $game
+    erb :game_over
   end
 
   run! if app_file == $0
